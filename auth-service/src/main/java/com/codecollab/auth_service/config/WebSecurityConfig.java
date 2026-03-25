@@ -1,5 +1,6 @@
 package com.codecollab.auth_service.config;
 
+import com.codecollab.auth_service.filter.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -16,7 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class WebSecurityConfig{
 
-    public final PasswordEncoder passwordEncoder;
+    private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
@@ -25,7 +27,7 @@ public class WebSecurityConfig{
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth->auth.requestMatchers("/public/**","/auth/**").permitAll()
                         .anyRequest().authenticated()
-                );
+                ).addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
           return httpSecurity.build();
     }

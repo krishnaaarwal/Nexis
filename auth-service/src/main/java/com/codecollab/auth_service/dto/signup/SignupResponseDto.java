@@ -1,13 +1,17 @@
 package com.codecollab.auth_service.dto.signup;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class SignupResponseDto {
-    private Long userId;
+    private UUID id;
     private String email;
 }

@@ -4,6 +4,7 @@ import com.codecollab.auth_service.dto.login.LoginRequestDto;
 import com.codecollab.auth_service.dto.login.LoginResponseDto;
 import com.codecollab.auth_service.dto.signup.SignupRequestDto;
 import com.codecollab.auth_service.dto.signup.SignupResponseDto;
+import com.codecollab.auth_service.entity.UserEntity;
 
 public interface AuthService {
     SignupResponseDto signup(SignupRequestDto requestDto);
