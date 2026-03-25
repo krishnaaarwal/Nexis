@@ -31,3 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
+
+/home/krishna/CodeCollab/auth-service/src/main/resources/application.yaml
