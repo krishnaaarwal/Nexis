@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: Postgres123
       POSTGRES_DB: auth-db
     volumes:
-      - "/home/krishna/Development/CodeCollabDB/auth-db:/var/lib/postgresql/data"
+      - "/home/krishna/Development/NexisDB/auth-db:/var/lib/postgresql/data"
 
 
 
