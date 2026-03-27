@@ -2,7 +2,7 @@ package com.nexis.auth_service.controller;
 
 /*
 API Endpoints:
-        • POST /api/auth/signup - Signup new user
+        • POST /api/auth/register - Signup new user
         • POST /api/auth/login - Login with email/password
         • POST /api/auth/refresh - Refresh access token
         • POST /api/auth/logout - Logout (invalidate tokens)
@@ -21,22 +21,20 @@ import com.nexis.auth_service.dto.login.*;
 import com.nexis.auth_service.dto.logout.LogoutRequestDto;
 import com.nexis.auth_service.dto.refreshtoken.RefreshTokenRequestDto;
 import com.nexis.auth_service.dto.signup.*;
+import com.nexis.auth_service.dto.user_profile.UserProfileResponseDto;
 import com.nexis.auth_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
     private final AuthService authService;
 
-    @PostMapping("/signup")
+    @PostMapping("/register")
     public ResponseEntity<SignupResponseDto> signup(@RequestBody SignupRequestDto requestDto){
         return ResponseEntity.ok(authService.signup(requestDto));
     }
@@ -46,7 +44,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(requestDto));
     }
 
-    @PostMapping("/refreshToken")
+    @PostMapping("/refresh")
     public ResponseEntity<LoginResponseDto> refreshToken(@RequestBody RefreshTokenRequestDto body){
         return ResponseEntity.status(HttpStatus.OK).body(authService.refreshToken(body));
     }
@@ -55,5 +53,10 @@ public class AuthController {
     public ResponseEntity<Void> logout(@RequestBody LogoutRequestDto requestDto){
         authService.logout(requestDto);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponseDto> getCurrentUserProfile(){
+        return ResponseEntity.ok(authService.getCurrentUserProfile());
     }
 }

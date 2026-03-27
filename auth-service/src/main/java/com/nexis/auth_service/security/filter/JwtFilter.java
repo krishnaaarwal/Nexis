@@ -3,6 +3,7 @@ package com.nexis.auth_service.security.filter;
 
 import com.nexis.auth_service.entity.UserEntity;
 import com.nexis.auth_service.repository.UserRepository;
+import com.nexis.auth_service.security.user_principal.UserPrincipal;
 import com.nexis.auth_service.util.AuthUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -45,14 +46,17 @@ public class JwtFilter extends OncePerRequestFilter {
 
            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-               UserEntity user = userRepository.findByEmail(email).orElseThrow();
+               UserEntity userEntity = userRepository.findByEmail(email).orElseThrow();
 
-               UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                       user, null
+               // 1. Create the Principal
+               UserPrincipal principal = new UserPrincipal(userEntity);
+
+               // 2. Put the Principal (not the entity) into the Authentication Token
+               UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                       principal, null, principal.getAuthorities()
                );
 
-               SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-
+               SecurityContextHolder.getContext().setAuthentication(authenticationToken);
            }
            filterChain.doFilter(request, response);
        } catch (Exception e) {

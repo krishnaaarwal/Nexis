@@ -7,6 +7,7 @@ import com.nexis.auth_service.dto.logout.LogoutRequestDto;
 import com.nexis.auth_service.dto.refreshtoken.RefreshTokenRequestDto;
 import com.nexis.auth_service.dto.signup.SignupRequestDto;
 import com.nexis.auth_service.dto.signup.SignupResponseDto;
+import com.nexis.auth_service.dto.user_profile.UserProfileResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -23,4 +24,6 @@ public interface AuthService {
     void logout(LogoutRequestDto requestDto);
 
     LoginResponseDto refreshToken(RefreshTokenRequestDto body);
+
+    UserProfileResponseDto getCurrentUserProfile();
 }

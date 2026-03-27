@@ -7,21 +7,22 @@ import com.nexis.auth_service.dto.logout.LogoutRequestDto;
 import com.nexis.auth_service.dto.refreshtoken.RefreshTokenRequestDto;
 import com.nexis.auth_service.dto.signup.SignupRequestDto;
 import com.nexis.auth_service.dto.signup.SignupResponseDto;
+import com.nexis.auth_service.dto.user_profile.UserProfileResponseDto;
 import com.nexis.auth_service.entity.RefreshTokenEntity;
 import com.nexis.auth_service.entity.UserEntity;
-
 import com.nexis.auth_service.exception.RefreshTokenNotFoundException;
 import com.nexis.auth_service.repository.UserRepository;
+import com.nexis.auth_service.security.user_principal.UserPrincipal;
 import com.nexis.auth_service.service.AuthService;
 import com.nexis.auth_service.util.AuthUtil;
 import com.nexis.auth_service.util.RefreshTokenUtil;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class AuthServiceImplementation implements AuthService {
     //Controller
     @Override
     public SignupResponseDto signup(SignupRequestDto body) {
-        UserEntity user = signupInternal(body,ProviderType.EMAIL,null);
+        UserEntity user = signupInternal(body,ProviderType.EMAIL,null,null);
         return SignupResponseDto.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -53,12 +54,16 @@ public class AuthServiceImplementation implements AuthService {
 
     //INTERNAL SIGNUP!!
     @Transactional
-    public UserEntity signupInternal(SignupRequestDto requestDto, ProviderType providerType, String providerId) {
+    public UserEntity signupInternal(SignupRequestDto requestDto, ProviderType providerType, String providerId,String avatarUrl) {
         //1. Check if user is already account or not
         UserEntity user = userRepository.findByEmail(requestDto.getEmail()).orElse(null);
 
         if(user!=null)
             throw new IllegalArgumentException("User already exists");
+
+        String finalAvatar = (avatarUrl != null && !avatarUrl.isBlank())
+                ? avatarUrl
+                : "https://api.dicebear.com/9.x/identicon/svg?seed=fallback";
 
         //2. Create new User
         user = UserEntity.builder()
@@ -66,6 +71,7 @@ public class AuthServiceImplementation implements AuthService {
                 .fullname(requestDto.getFullname())
                 .providerType(providerType)
                 .providerId(providerId)
+                .avatar(finalAvatar)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -79,25 +85,19 @@ public class AuthServiceImplementation implements AuthService {
     }
 
     @Override
+    @Transactional
     public LoginResponseDto login(LoginRequestDto requestDto) {
-        // 1. AuthenticationManager delegates to AuthenticationProvider
         Authentication authentication = authenticationManager.
                 authenticate(new UsernamePasswordAuthenticationToken(requestDto.getEmail(), requestDto.getPassword()));
 
-        //Principals() -> Username and details
-        //Credentials() -> Password
-        //Details() -> session id and ip address
+        // 1. Cast to UserPrincipal instead of UserEntity
+        UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
 
-        // Actually, AuthenticationManager → ProviderManager → DaoAuthenticationProvider
-        // DaoAuthenticationProvider uses UserDetailsService + PasswordEncoder
+        // 2. Use the escape hatch to get the entity
+        UserEntity userEntity = principal.getUserEntity();
 
-        // 2. Principal is the authenticated user (UserDetails implementation)
-        UserEntity userEntity = (UserEntity) authentication.getPrincipal();
-
-        // 3. Refresh token & Generate token
         RefreshTokenEntity refreshToken = refreshTokenUtil.generateRefreshToken(userEntity.getId());
         String token = authUtil.generateAccessToken(userEntity);
-
 
         return LoginResponseDto.builder()
                 .id(userEntity.getId())
@@ -108,6 +108,7 @@ public class AuthServiceImplementation implements AuthService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<LoginResponseDto> handleOauth2LoginRequest(OAuth2User oAuth2User, String registrationId) {
         // Find Provider type and id
         //save the provider type and id Info with user
@@ -116,6 +117,8 @@ public class AuthServiceImplementation implements AuthService {
 
         ProviderType providerType = authUtil.getProviderTypeFromRegistrationId(registrationId);
         String providerId = authUtil.determineProviderIdFromOauth2User(oAuth2User,registrationId);
+
+        String oauthAvatarUrl = authUtil.getAvatarFromOauth2User(oAuth2User, registrationId);
 
         UserEntity user = userRepository.findByProviderIdAndProviderType(providerId,providerType).orElse(null);
 
@@ -127,7 +130,7 @@ public class AuthServiceImplementation implements AuthService {
             //signup flow:
             String emailSignup = authUtil.determineEmailFromOauth2User(oAuth2User,registrationId,providerId);
 
-            user = signupInternal(new SignupRequestDto(emailSignup, null, null),providerType,providerId);
+            user = signupInternal(new SignupRequestDto(emailSignup, null, null),providerType,providerId,oauthAvatarUrl);
         } else if (user!=null) {
             if(email!=null && !email.isBlank() && !email.equals(user.getEmail())){
                 user.setEmail(email);
@@ -145,6 +148,7 @@ public class AuthServiceImplementation implements AuthService {
 
 
     @Override
+    @Transactional
     public void logout(LogoutRequestDto requestDto) {
         String token = requestDto.getRefreshToken();
 
@@ -167,6 +171,25 @@ public class AuthServiceImplementation implements AuthService {
                 .refreshToken(refreshToken.getToken())
                 .id(user.getId())
                 .email(user.getEmail())
+                .build();
+    }
+
+    @Transactional
+    @Override
+    public UserProfileResponseDto getCurrentUserProfile(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // 1. It is ALWAYS a UserPrincipal now!
+        UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
+
+        // 2. Grab the entity
+        UserEntity user = principal.getUserEntity();
+
+        return UserProfileResponseDto.builder()
+                .id(user.getId())
+                .fullname(user.getFullname())
+                .email(user.getEmail())
+                .avatar(user.getAvatar())
                 .build();
     }
 

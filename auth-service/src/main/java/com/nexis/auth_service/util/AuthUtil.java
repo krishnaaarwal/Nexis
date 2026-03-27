@@ -87,4 +87,27 @@ public class AuthUtil {
             default -> providerId;
         };
     }
+
+
+    public String getAvatarFromOauth2User(OAuth2User oAuth2User, String registrationId) {
+        String avatarUrl = switch (registrationId.toLowerCase()){
+            case "google" -> oAuth2User.getAttribute("picture");
+            // Some OAuth providers might return null, safely handle toString()
+            case "github" -> {
+                Object avatar = oAuth2User.getAttribute("avatar_url");
+                yield avatar != null ? avatar.toString() : null;
+            }
+            default -> {
+                log.warn("Unsupported oauth2 provider for avatar: {}", registrationId);
+                yield null; // Don't crash, just yield null
+            }
+        };
+
+        if (avatarUrl == null || avatarUrl.isBlank()) {
+            log.info("No avatar found from provider {}, will use default.", registrationId);
+            return null; // Let the default fallback take over in signupInternal
+        }
+
+        return avatarUrl;
+    }
 }
