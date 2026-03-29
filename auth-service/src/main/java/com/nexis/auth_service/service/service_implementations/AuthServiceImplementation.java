@@ -78,7 +78,6 @@ public class AuthServiceImplementation implements AuthService {
                 .providerType(providerType)
                 .providerId(providerId)
                 .avatar(finalAvatar)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         if(providerType == ProviderType.EMAIL && requestDto.getPassword() != null){

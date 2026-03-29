@@ -37,7 +37,15 @@ public class WebSecurityConfig{
          httpSecurity
                 .csrf(csrf->csrf.disable()) //CSRF(CROSS SITE REQUEST FORGERY) DISABLE
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth->auth.requestMatchers("/public/**","/auth/**").permitAll()
+                .authorizeHttpRequests(auth->auth.requestMatchers(
+                                 "/public/**",
+                                "/api/auth/register",    // Only signup is public
+                                "/api/auth/login",       // Only login is public
+                                "/api/auth/refresh",     // Public, because access token is dead!
+                                 "/v3/api-docs/**",       // Let Swagger generate the JSON
+                                 "/swagger-ui/**",        // Let Swagger serve the UI CSS/JS
+                                 "/swagger-ui.html"       // Let Swagger serve the main page
+                         ).permitAll()
                         .anyRequest().authenticated()
                 ).addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                  .oauth2Login(oauth2->oauth2.failureHandler(new AuthenticationFailureHandler() {

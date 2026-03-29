@@ -4,6 +4,9 @@ import com.nexis.auth_service.config.type.ProviderType;
 import com.nexis.auth_service.config.type.WorkspaceRole;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -13,6 +16,7 @@ import java.util.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -24,6 +28,8 @@ public class UserEntity {
     private String avatar;
     private String providerId;
     private ProviderType providerType;
+    @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @Builder.Default

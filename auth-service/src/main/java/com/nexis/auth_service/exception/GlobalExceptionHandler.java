@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgumentException(IllegalArgumentException ex){
-        log.warn("Bad Request: {}", ex.getMessage()); // WARN: The client messed up, not our server
+        log.warn("Bad Request: {}", ex.getMessage());
         ApiError apiError = new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(apiError, apiError.getHttpStatus());
     }
@@ -31,7 +31,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({AuthenticationException.class, JwtException.class, RefreshTokenNotFoundException.class, RefreshTokenExpiredException.class})
     public ResponseEntity<ApiError> handleSecurityExceptions(RuntimeException ex){
-        // Grouped similar 401 errors together to save space!
         log.warn("Security/Auth failure: {}", ex.getMessage());
         ApiError apiError = new ApiError(ex.getMessage(), HttpStatus.UNAUTHORIZED);
         return new ResponseEntity<>(apiError, apiError.getHttpStatus());
@@ -44,42 +43,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiError, apiError.getHttpStatus());
     }
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ApiError> handleAuthenticationException(AuthenticationException authenticationException){
-        ApiError apiError = new ApiError("Authentication failed :"+authenticationException.getMessage(),HttpStatus.UNAUTHORIZED);
-        return new ResponseEntity<>(apiError,apiError.getHttpStatus());
-    }
-
-    @ExceptionHandler(JwtException.class)
-    public ResponseEntity<ApiError> handleJwtException(JwtException jwtException){
-        ApiError apiError = new ApiError("Invalid Jwt token: "+jwtException.getMessage(),HttpStatus.UNAUTHORIZED);
-        return new ResponseEntity<>(apiError,apiError.getHttpStatus());
-    }
-
-    @ExceptionHandler(RefreshTokenNotFoundException.class)
-    public ResponseEntity<ApiError> handleRefreshTokenNotFoundException(RefreshTokenNotFoundException exception){
-        ApiError apiError = new ApiError("Refresh Token not found: "+exception.getMessage(),HttpStatus.UNAUTHORIZED);
-        return new ResponseEntity<>(apiError,apiError.getHttpStatus());
-    }
-
-    @ExceptionHandler(RefreshTokenExpiredException.class)
-    public ResponseEntity<ApiError> handleRefreshTokenExpiredException(RefreshTokenExpiredException exception){
-        ApiError apiError = new ApiError("Refresh Token expired: "+exception.getMessage(),HttpStatus.UNAUTHORIZED);
-        return new ResponseEntity<>(apiError,apiError.getHttpStatus());
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGenericException(Exception ex){
-        // ERROR: This is a server crash. We print the FULL stack trace (ex) so we can debug it!
-        log.error("CRITICAL: An unexpected server error occurred: ", ex);
-        ApiError apiError = new ApiError("An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR);
-        return new ResponseEntity<>(apiError, apiError.getHttpStatus());
-    }
-
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleResourceNotFoundException(ResourceNotFoundException ex){
         log.warn("Not Found: {}", ex.getMessage());
-        // 404 NOT FOUND is perfect for missing IDs
         ApiError apiError = new ApiError(ex.getMessage(), HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(apiError, apiError.getHttpStatus());
     }
@@ -87,10 +53,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({UserAlreadyExistsException.class, DuplicateMemberException.class})
     public ResponseEntity<ApiError> handleConflictExceptions(RuntimeException ex){
         log.warn("Data Conflict: {}", ex.getMessage());
-        // 409 CONFLICT is the correct HTTP standard when data already exists
         ApiError apiError = new ApiError(ex.getMessage(), HttpStatus.CONFLICT);
         return new ResponseEntity<>(apiError, apiError.getHttpStatus());
     }
 
-
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleGenericException(Exception ex){
+        log.error("CRITICAL: An unexpected server error occurred: ", ex);
+        ApiError apiError = new ApiError("An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(apiError, apiError.getHttpStatus());
+    }
 }

@@ -19,6 +19,7 @@ import com.nexis.auth_service.dto.refreshtoken.RefreshTokenRequestDto;
 import com.nexis.auth_service.dto.signup.*;
 import com.nexis.auth_service.dto.user_profile.UserProfileResponseDto;
 import com.nexis.auth_service.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -34,25 +35,25 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<SignupResponseDto> signup(@RequestBody SignupRequestDto requestDto){
+    public ResponseEntity<SignupResponseDto> signup(@RequestBody @Valid SignupRequestDto requestDto){
         log.info("Received signup request for email: {}", requestDto.getEmail());
         return ResponseEntity.ok(authService.signup(requestDto));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto requestDto){
+    public ResponseEntity<LoginResponseDto> login(@RequestBody @Valid LoginRequestDto requestDto){
         log.info("Received login request for email: {}", requestDto.getEmail());
         return ResponseEntity.ok(authService.login(requestDto));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponseDto> refreshToken(@RequestBody RefreshTokenRequestDto body){
+    public ResponseEntity<LoginResponseDto> refreshToken(@RequestBody @Valid RefreshTokenRequestDto body){
         log.info("Received token refresh request");
         return ResponseEntity.status(HttpStatus.OK).body(authService.refreshToken(body));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestBody LogoutRequestDto requestDto,@RequestHeader("Authorization") String authHeader){
+    public ResponseEntity<Void> logout(@RequestBody @Valid LogoutRequestDto requestDto,@RequestHeader("Authorization") String authHeader){
         log.info("Received logout request");
         authService.logout(requestDto,authHeader);
         return ResponseEntity.noContent().build();

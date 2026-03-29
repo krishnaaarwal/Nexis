@@ -3,6 +3,7 @@ package com.nexis.auth_service.controller;
 import com.nexis.auth_service.dto.workspace.WorkspaceRequestDto;
 import com.nexis.auth_service.dto.workspace.WorkspaceResponseDto;
 import com.nexis.auth_service.service.WorkspaceService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,13 +36,13 @@ public class WorkspaceController {
     }
 
     @PostMapping()
-    public ResponseEntity<WorkspaceResponseDto> createWorkspace(@RequestBody WorkspaceRequestDto requestDto){
+    public ResponseEntity<WorkspaceResponseDto> createWorkspace(@RequestBody @Valid WorkspaceRequestDto requestDto){
         log.info("Received request to create new workspace: '{}'", requestDto.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(workspaceService.createWorkspace(requestDto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<WorkspaceResponseDto> updateWorkspace(@PathVariable UUID id, @RequestBody WorkspaceRequestDto requestDto){
+    public ResponseEntity<WorkspaceResponseDto> updateWorkspace(@PathVariable UUID id, @RequestBody @Valid WorkspaceRequestDto requestDto){
         log.info("Received request to update workspace ID: {}", id);
         return ResponseEntity.status(HttpStatus.OK).body(workspaceService.updateWorkspace(id, requestDto));
     }
