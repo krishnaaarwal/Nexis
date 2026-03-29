@@ -26,6 +26,7 @@ public class UserEntity {
     private ProviderType providerType;
     private LocalDateTime createdAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<WorkspaceMemberEntity> workspaceMemberList = new ArrayList<>();
 }

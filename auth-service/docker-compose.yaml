@@ -11,6 +11,16 @@ services:
       POSTGRES_DB: auth-db
     volumes:
       - "/home/krishna/Development/NexisDB/auth-db:/var/lib/postgresql/data"
-
+  redis:
+    container_name: auth_redis
+    image: redis:7
+    restart: always
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+        - "/home/krishna/Development/NexisDB/redis-data:/data"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
 
 

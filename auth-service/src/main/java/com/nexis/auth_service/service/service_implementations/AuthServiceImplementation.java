@@ -11,6 +11,7 @@ import com.nexis.auth_service.dto.user_profile.UserProfileResponseDto;
 import com.nexis.auth_service.entity.RefreshTokenEntity;
 import com.nexis.auth_service.entity.UserEntity;
 import com.nexis.auth_service.exception.RefreshTokenNotFoundException;
+import com.nexis.auth_service.exception.ResourceNotFoundException;
 import com.nexis.auth_service.exception.UserAlreadyExistsException;
 import com.nexis.auth_service.repository.UserRepository;
 import com.nexis.auth_service.security.user_principal.UserPrincipal;
@@ -20,6 +21,7 @@ import com.nexis.auth_service.util.RefreshTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -150,6 +152,7 @@ public class AuthServiceImplementation implements AuthService {
     }
 
     @Override
+    @PreAuthorize("isAuthenticated()")
     @Transactional
     public void logout(LogoutRequestDto requestDto) {
         String token = requestDto.getRefreshToken();
@@ -167,7 +170,8 @@ public class AuthServiceImplementation implements AuthService {
 
         refreshToken = refreshTokenUtil.verifyAndRotate(refreshToken);
         UUID userId = refreshToken.getUserId();
-        UserEntity user = userRepository.getById(userId);
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
         String accessToken = authUtil.generateAccessToken(user);
 
         log.info("Successfully rotated tokens for User ID: {}", userId);
@@ -181,6 +185,7 @@ public class AuthServiceImplementation implements AuthService {
     }
 
     @Transactional
+    @PreAuthorize("isAuthenticated()")
     @Override
     public UserProfileResponseDto getCurrentUserProfile(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

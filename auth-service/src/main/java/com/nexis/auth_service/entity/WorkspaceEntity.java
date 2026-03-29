@@ -29,6 +29,7 @@ public class WorkspaceEntity {
     private String description;
     private String visibility;
 
+    @Builder.Default
     @OneToMany(mappedBy = "workspace",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<WorkspaceMemberEntity> members = new ArrayList<>();
 }
