@@ -6,6 +6,7 @@ import com.nexis.auth_service.dto.workspace.WorkspaceResponseDto;
 import com.nexis.auth_service.entity.UserEntity;
 import com.nexis.auth_service.entity.WorkspaceEntity;
 import com.nexis.auth_service.entity.WorkspaceMemberEntity;
+import com.nexis.auth_service.exception.ResourceNotFoundException;
 import com.nexis.auth_service.repository.UserRepository;
 import com.nexis.auth_service.repository.WorkspaceRepository;
 import com.nexis.auth_service.security.user_principal.UserPrincipal;
@@ -24,8 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any; // FIXED IMPORT
 import static org.mockito.Mockito.*;
 
@@ -102,8 +102,39 @@ class WorkspaceServiceImplementationTest {
             assertNotNull(result);
             assertEquals("Test Workspace", result.getName());
 
-            verify(workspaceRepository,times(1)).save(workspaceEntity);
+            // "Hey Director, verify that the workspaceRepository had its save() method called 1 time"
+            verify(workspaceRepository, times(1)).save(any(WorkspaceEntity.class));
             verify(workspaceRepository.save(argThat(workspaceEntity->workspaceEntity.getName().equals("Test Workspace"))));
         }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when User is missing")
+        void shouldThrowExceptionWhenUserNotFound(){
+
+            // --- 1. GIVEN (Rigging the props) ---
+
+            // A. Rig the Security Context exactly like before
+            Authentication authentication = mock(Authentication.class);
+            SecurityContext securityContext = mock(SecurityContext.class);
+            when(securityContext.getAuthentication()).thenReturn(authentication);
+            SecurityContextHolder.setContext(securityContext);
+
+            UserPrincipal fakePrincipal = new UserPrincipal(userEntity);
+            when(authentication.getPrincipal()).thenReturn(fakePrincipal);
+
+            // B. THE TRAP: Rig the Fridge to be EMPTY!
+            // When the Chef looks for the user, return an EMPTY Optional.
+            when(userRepository.findById(fakeUserId)).thenReturn(Optional.empty());
+
+            // --- 2 & 3. WHEN & THEN (Wait for the explosion) ---
+
+            // We tell JUnit: "I expect a ResourceNotFoundException to be thrown when I run this code."
+            assertThrows(ResourceNotFoundException.class, () -> {
+                workspaceServiceImplementation.createWorkspace(workspaceRequestDto);
+            });
+
+            // BONUS: Verify that because it crashed, the service NEVER tried to save a workspace!
+            verify(workspaceRepository, never()).save(any());
+        }
+        }
     }
-}

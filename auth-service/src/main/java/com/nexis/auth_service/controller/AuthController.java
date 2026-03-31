@@ -7,12 +7,16 @@ API Endpoints:
         • POST /api/auth/refresh - Refresh access token
         • POST /api/auth/logout - Logout (invalidate tokens)
         • GET /api/auth/me - Get current user profile
+        * POST /api/auth/forgot-password - Forget password
+        * POST /api/auth/reset-password - Reset password
         • POST /api/auth/oauth/google - Login with Google -LATER
         • POST /api/auth/oauth/github - Login with GitHub -LATER
 
  */
 
 
+import com.nexis.auth_service.dto.forgot_password.ForgotPasswordRequestDto;
+import com.nexis.auth_service.dto.forgot_password.ResetPasswordRequestDto;
 import com.nexis.auth_service.dto.login.*;
 import com.nexis.auth_service.dto.logout.LogoutRequestDto;
 import com.nexis.auth_service.dto.refreshtoken.RefreshTokenRequestDto;
@@ -63,5 +67,19 @@ public class AuthController {
     public ResponseEntity<UserProfileResponseDto> getCurrentUserProfile(){
         log.info("Fetching current user profile data");
         return ResponseEntity.ok(authService.getCurrentUserProfile());
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody @Valid ForgotPasswordRequestDto requestDto) {
+        log.info("Received forgot password request for: {}", requestDto.getEmail());
+        authService.forgotPassword(requestDto);
+        return ResponseEntity.ok("If an account exists, a reset code has been sent to the email.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody @Valid ResetPasswordRequestDto requestDto) {
+        log.info("Received reset password request for: {}", requestDto.getEmail());
+        authService.resetPassword(requestDto);
+        return ResponseEntity.ok("Password successfully reset.");
     }
 }

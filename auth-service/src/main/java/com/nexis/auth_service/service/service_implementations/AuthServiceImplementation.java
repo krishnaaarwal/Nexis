@@ -1,6 +1,8 @@
 package com.nexis.auth_service.service.service_implementations;
 
 import com.nexis.auth_service.config.type.ProviderType;
+import com.nexis.auth_service.dto.forgot_password.ForgotPasswordRequestDto;
+import com.nexis.auth_service.dto.forgot_password.ResetPasswordRequestDto;
 import com.nexis.auth_service.dto.login.LoginRequestDto;
 import com.nexis.auth_service.dto.login.LoginResponseDto;
 import com.nexis.auth_service.dto.logout.LogoutRequestDto;
@@ -33,6 +35,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -217,4 +220,44 @@ public class AuthServiceImplementation implements AuthService {
                 .avatar(user.getAvatar())
                 .build();
     }
+
+    @Override
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequestDto requestDto) {
+    UserEntity user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User not found with this email"));
+
+        // 1. Generate a 6-digit OTP
+        String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
+
+        //2. Save to Redis
+        String redisKey = "pwd_reset:" + user.getEmail();
+        redisTemplate.opsForValue().set(redisKey,otp, Duration.ofMinutes(10));
+
+        log.info("======================================================");
+        log.info("📧 EMAIL SENT TO: {}", user.getEmail());
+        log.info("🔑 YOUR PASSWORD RESET OTP IS: {}", otp);
+        log.info("======================================================");
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(ResetPasswordRequestDto requestDto) {
+        String redisKey = "pwd_reset:" + requestDto.getEmail();
+        String realOtp = redisTemplate.opsForValue().get(redisKey);
+
+        if(realOtp == null || !realOtp.equals(requestDto.getOtp())){
+            throw new IllegalArgumentException("Invalid or expired OTP");
+        }
+
+        UserEntity user = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User not found with this email"));
+
+        user.setPassword(passwordEncoder.encode(requestDto.getNewPassword()));
+        userRepository.save(user);
+
+        // Delete the OTP from Redis so it can't be used again
+        redisTemplate.delete(redisKey);
+
+        log.info("Password successfully reset for user: {}", user.getEmail());
+    }
+
 }
