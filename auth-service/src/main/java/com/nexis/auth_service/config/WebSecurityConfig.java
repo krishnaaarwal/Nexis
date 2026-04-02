@@ -39,7 +39,7 @@ public class WebSecurityConfig{
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth->auth.requestMatchers(
                                  "/public/**",
-                                "/api/auth/register",    // Only signup is public
+                                "/api/auth/signup",    // Only signup is public
                                 "/api/auth/login",       // Only login is public
                                 "/api/auth/refresh",     // Public, because access token is dead!
                                 "/api/auth/forgot-password",
