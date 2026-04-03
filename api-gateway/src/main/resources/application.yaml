@@ -1,8 +1,19 @@
 spring:
   application:
     name: api-gateway
+
 server:
   port: 8080
+
+#It becomes Eureka client
 eureka:
   client:
-    ur
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+#Management of actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
