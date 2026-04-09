@@ -2,6 +2,7 @@ spring:
   application:
     name: eureka-server
 
+#Registered as Eureka server
 eureka:
   instance:
     hostname: localhost
