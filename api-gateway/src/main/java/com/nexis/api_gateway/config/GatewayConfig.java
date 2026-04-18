@@ -22,12 +22,18 @@ public class GatewayConfig {
     //Resolve by IP Address
     @Bean
     public KeyResolver keyResolver(){
-        return exchange -> Mono.just(exchange.getRequest().getRemoteAddress().getAddress().getHostAddress());
+        return exchange -> {
+            var remoteAddress = exchange.getRequest().getRemoteAddress();
+            String ip = "unknown";
+            if(remoteAddress!=null && remoteAddress.getAddress() !=null)
+                ip = remoteAddress.getAddress().getHostAddress();
+            return Mono.just(ip);
+        };
     }
 
     @Bean
     public RateLimiter rateLimiter(){
-        return new RedisRateLimiter(1,1,1);
+        return new RedisRateLimiter(100,200,1);
     }
 
     //LOCATE THE ROUTE
@@ -40,6 +46,8 @@ public class GatewayConfig {
                                         f-> f.filter(jwtAuthenticationFilter.apply(new JwtAuthenticationFilter.Config()))
                                                 .requestRateLimiter(c->c.setRateLimiter(rateLimiter())
                                                         .setKeyResolver(keyResolver()))
+                                                .circuitBreaker()
+
                                         )
                                         .uri("lb://auth-service")
                 ) //uri,predicate,filter in each route
