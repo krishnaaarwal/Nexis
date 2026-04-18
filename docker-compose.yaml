@@ -12,7 +12,7 @@ services:
     volumes:
       - "/home/krishna/Development/NexisDB/auth-db:/var/lib/postgresql/data"
   redis:
-    container_name: auth_redis
+    container_name: nexis_redis
     image: redis:7
     restart: always
     ports:
