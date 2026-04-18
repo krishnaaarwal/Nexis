@@ -43,10 +43,20 @@ public class GatewayConfig {
                 .route("auth-service-route",
                         r-> r.path("/api/auth/**")
                                 .filters(
-                                        f-> f.filter(jwtAuthenticationFilter.apply(new JwtAuthenticationFilter.Config()))
+                                        f-> f.filter(
+
+                                                //1. Jwt filter
+                                                jwtAuthenticationFilter.apply(new JwtAuthenticationFilter.Config()))
+
+                                                //2. Rate Limiting
                                                 .requestRateLimiter(c->c.setRateLimiter(rateLimiter())
                                                         .setKeyResolver(keyResolver()))
-                                                .circuitBreaker()
+
+                                                //3. Circuit Breaker
+                                                .circuitBreaker(
+                                                        c->c.setName("auth-service")
+                                                                .setFallbackUri("forward:/fallback/auth")
+                                                )
 
                                         )
                                         .uri("lb://auth-service")
