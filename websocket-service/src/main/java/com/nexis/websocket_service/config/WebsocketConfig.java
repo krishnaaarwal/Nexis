@@ -1,13 +1,16 @@
 package com.nexis.websocket_service.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.converter.DefaultContentTypeResolver;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -20,12 +23,11 @@ import java.util.List;
 @EnableWebSocketMessageBroker
 public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final RedisTemplate<> redisTemplate;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")     // HTTP Upgrade → WebSocket (via /ws endpoint)
-                .setAllowedOrigins("*")       // Who can knock (CORS)
+                .setAllowedOriginPatterns("*")       // Who can knock (CORS)
                 .withSockJS();                // Fallback if WebSocket is blocked
     }
 
@@ -42,12 +44,21 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
+
         DefaultContentTypeResolver resolver = new DefaultContentTypeResolver();
         resolver.setDefaultMimeType(MimeTypeUtils.APPLICATION_JSON);
 
-        Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter();
+        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+        //↑ org.springframework.messaging.converter — NOT amqp!
 
-        return true;
+        converter.setContentTypeResolver(resolver);
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());  // handles LocalDateTime etc.
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        converter.setObjectMapper(mapper);
+
+        messageConverters.add(converter);
+        return false; // I will Use ONLY our converter
     }
-
 }
