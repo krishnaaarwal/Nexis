@@ -1,4 +1,4 @@
-package com.nexis.websocket_service.pub_sub;
+package com.nexis.websocket_service.service.pub_sub;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;

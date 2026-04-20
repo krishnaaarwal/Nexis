@@ -1,6 +1,6 @@
 package com.nexis.websocket_service.config;
 
-import com.nexis.websocket_service.pub_sub.RedisMessageSubscriber;
+import com.nexis.websocket_service.service.pub_sub.RedisMessageSubscriber;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
