@@ -16,8 +16,8 @@ public class CodeOperation {
     private Integer version;
     private UUID userId;
     private OperationType operationType;
-    private Integer position;
-    private String code;
+    private Integer position;          // Kis position par insert karna ha
+    private String code;               // Insert karne ka content
     private Integer length;           // How many characters to DELETE or RETAIN
 }
 
