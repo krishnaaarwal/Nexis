@@ -1,10 +1,7 @@
 package com.nexis.websocket_service.controller;
 
 
-import com.nexis.websocket_service.payload.ChatMessage;
-import com.nexis.websocket_service.payload.CodeOperation;
-import com.nexis.websocket_service.payload.CursorPayload;
-import com.nexis.websocket_service.payload.TypingPayload;
+import com.nexis.websocket_service.payload.*;
 import com.nexis.websocket_service.service.OperationalTransformService;
 import com.nexis.websocket_service.service.pub_sub.RedisMessagePublisher;
 import com.nexis.websocket_service.service.rabbit_mq_event_recorder.RabbitMqEventPublisher;
@@ -74,5 +71,12 @@ public class WebsocketController {
     @MessageMapping("/workspace/{workspaceId}/typing")
     public void handleTyping(@Payload TypingPayload typing, @DestinationVariable UUID workspaceId) {
         redisMessagePublisher.publish("nexis:workspace:" + workspaceId + ":typing", typing);
+    }
+
+    @MessageMapping("/private")
+    public void handlePrivateMessage(@Payload PrivateMessagePayload message) {
+        log.info("Private message from {} to {}", message.getSenderId(), message.getReceiverId());
+
+        redisMessagePublisher.publish("nexis:user:" + message.getReceiverId() + ":private", message);
     }
 }

@@ -30,6 +30,11 @@ public class RedisConfig {
                 new PatternTopic("nexis:workspace:*")
         );
 
+        container.addMessageListener(
+                redisMessageSubscriber,
+                new PatternTopic("nexis:user:*")
+        );
+
         return container;
     }
 

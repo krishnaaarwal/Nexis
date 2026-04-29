@@ -20,24 +20,30 @@ public class RedisMessageSubscriber implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] pattern) {   // This method fires on EVERY instance whenever Redis broadcasts
         try {
-            // 1. Extract raw data from Redis
+
             String publishedMessage = new String(message.getBody());
             String channel = new String(message.getChannel());
+            String[] parts = channel.split(":");  // Split by ":" → ["nexis", "workspace", "123", "cursor"]
 
-            // Split by ":" → ["nexis", "workspace", "123", "cursor"]
-            String[] parts = channel.split(":");
-            String workspaceId = parts[2];
-            String channelType = parts[3];
+            String destination;
 
-            // 2. Map the Redis channel back to your WebSocket STOMP topic
-            // 2. Figure out WHERE to send on WebSocket
-            String destination = "/topic/workspace/" + workspaceId + "/"+ channelType;
+            // Pattern: nexis:workspace:{id}:{type}
+            if(parts[1].equals("workspace")){
+                String workspaceId = parts[2];
+                String channelType = parts[3];
+                destination = "/topic/workspace/" + workspaceId + "/"+ channelType;
+            }
+            // Pattern: nexis:user:{id}:private
+            else if (parts[1].equals("user")) {
+                String userId = parts[2];
+                destination = "/user/queue/" + userId + "/private";
+            }else {
+                return;
+            }
 
-            // 3. Push to all WebSocket clients on THIS instance
             messagingTemplate.convertAndSend(destination, publishedMessage);
 
         } catch (Exception e) {
-            // Handle deserialization errors
             System.err.println("Failed to process Redis message: " + e.getMessage());
         }
     }
