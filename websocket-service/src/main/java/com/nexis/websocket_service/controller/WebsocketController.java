@@ -4,6 +4,7 @@ package com.nexis.websocket_service.controller;
 import com.nexis.websocket_service.payload.ChatMessage;
 import com.nexis.websocket_service.payload.CodeOperation;
 import com.nexis.websocket_service.payload.CursorPayload;
+import com.nexis.websocket_service.payload.TypingPayload;
 import com.nexis.websocket_service.service.OperationalTransformService;
 import com.nexis.websocket_service.service.pub_sub.RedisMessagePublisher;
 import com.nexis.websocket_service.service.rabbit_mq_event_recorder.RabbitMqEventPublisher;
@@ -26,7 +27,7 @@ public class WebsocketController {
     private final RabbitMqEventPublisher rabbitMqEventPublisher;
 
     @MessageMapping("/workspace/{workspaceId}/code")
-    public void handleCodeChange(@Payload CodeOperation code, @DestinationVariable UUID workspaceId){   //DesinationVariable instead of Path Variable
+    public void handleCodeChange(@Payload CodeOperation code, @DestinationVariable UUID workspaceId){   //DestinationVariable instead of Path Variable
 
         log.info("Code change received | workspace: {} | op: {} | position: {}",
                 workspaceId,
@@ -68,5 +69,10 @@ public class WebsocketController {
                 ,chat);
 
         rabbitMqEventPublisher.publishChatEvent(chat);
+    }
+
+    @MessageMapping("/workspace/{workspaceId}/typing")
+    public void handleTyping(@Payload TypingPayload typing, @DestinationVariable UUID workspaceId) {
+        redisMessagePublisher.publish("nexis:workspace:" + workspaceId + ":typing", typing);
     }
 }
