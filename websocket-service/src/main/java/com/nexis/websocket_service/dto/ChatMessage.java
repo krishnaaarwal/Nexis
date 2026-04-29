@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @Data
-public class ChatMessageDto {
+public class ChatMessage {
     private UUID userId;
     private UUID workspaceId;  //which workspace it belongs to
     private LocalDateTime time = LocalDateTime.now();

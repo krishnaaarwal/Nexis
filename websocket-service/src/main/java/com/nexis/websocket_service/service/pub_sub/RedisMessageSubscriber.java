@@ -26,10 +26,14 @@ public class RedisMessageSubscriber implements MessageListener {
             String publishedMessage = new String(message.getBody());
             String channel = new String(message.getChannel());
 
+            // Split by ":" → ["nexis", "workspace", "123", "cursor"]
+            String[] parts = channel.split(":");
+            String workspaceId = parts[2];
+            String channelType = parts[3];
+
             // 2. Map the Redis channel back to your WebSocket STOMP topic
             // 2. Figure out WHERE to send on WebSocket
-            String workspaceId = channel.replace("nexis:workspace:", "");
-            String destination = "/topic/workspace/" + workspaceId + "/code";
+            String destination = "/topic/workspace/" + workspaceId + "/"+ channelType;
 
             // 3. Push to all WebSocket clients on THIS instance
             messagingTemplate.convertAndSend(destination, publishedMessage);

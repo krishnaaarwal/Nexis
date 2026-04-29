@@ -1,7 +1,9 @@
 package com.nexis.websocket_service.controller;
 
 
+import com.nexis.websocket_service.dto.ChatMessage;
 import com.nexis.websocket_service.dto.CodeOperation;
+import com.nexis.websocket_service.dto.CursorPayload;
 import com.nexis.websocket_service.service.OperationalTransformService;
 import com.nexis.websocket_service.service.pub_sub.RedisMessagePublisher;
 import com.nexis.websocket_service.service.rabbit_mq_event_recorder.RabbitMqEventPublisher;
@@ -36,9 +38,37 @@ public class WebsocketController {
 
         CodeOperation transformedOp = operationalTransformService.processOperation(workspaceId,code);
 
-        redisMessagePublisher.publish("nexis:workspace:" + workspaceId,transformedOp);
+        redisMessagePublisher.publish("nexis:workspace:" + workspaceId + ":code"
+                ,transformedOp);
 
         rabbitMqEventPublisher.publishCodeEvent(transformedOp);
 
+    }
+
+    @MessageMapping("/workspace/{workspaceId}/cursor")
+    public void handleCursorChange(@Payload CursorPayload cursor,@DestinationVariable UUID workspaceId){
+        log.info("Cursor move | workspace: {} | user: {} | line: {} | col: {}",
+                workspaceId,
+                cursor.getUserId(),
+                cursor.getLine(),
+                cursor.getCharacterIndex()
+        );
+
+        redisMessagePublisher.publish("nexis:workspace:"+workspaceId+ ":cursor"
+                ,cursor);
+
+    }
+
+    @MessageMapping("/workspace/{workspaceId}/chat")
+    public void handleChat(@Payload ChatMessage chat, @DestinationVariable UUID workspaceId){
+        log.info("Chat message | workspace: {} | user: {} ",
+                workspaceId,
+                chat.getUserId()
+        );
+
+        redisMessagePublisher.publish("nexis:workspace"+workspaceId+":chat"
+                ,chat);
+
+        rabbitMqEventPublisher.publishChatEvent(chat);
     }
 }
