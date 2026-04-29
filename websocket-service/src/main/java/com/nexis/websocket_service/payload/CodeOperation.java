@@ -1,4 +1,4 @@
-package com.nexis.websocket_service.dto;
+package com.nexis.websocket_service.payload;
 
 import com.nexis.websocket_service.config.type.OperationType;
 import lombok.AllArgsConstructor;

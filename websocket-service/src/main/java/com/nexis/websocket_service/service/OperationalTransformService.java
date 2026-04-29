@@ -1,12 +1,11 @@
 package com.nexis.websocket_service.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nexis.websocket_service.dto.CodeOperation;
+import com.nexis.websocket_service.payload.CodeOperation;
 import com.nexis.websocket_service.service.lock.RedissonLockService;
 import com.nexis.websocket_service.util.OTEngine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 

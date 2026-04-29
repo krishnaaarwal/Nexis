@@ -1,7 +1,7 @@
 package com.nexis.websocket_service.util;
 
 import com.nexis.websocket_service.config.type.OperationType;
-import com.nexis.websocket_service.dto.CodeOperation;
+import com.nexis.websocket_service.payload.CodeOperation;
 
 public class OTEngine {
 

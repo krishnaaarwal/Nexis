@@ -1,20 +1,18 @@
 package com.nexis.websocket_service.controller;
 
 
-import com.nexis.websocket_service.dto.ChatMessage;
-import com.nexis.websocket_service.dto.CodeOperation;
-import com.nexis.websocket_service.dto.CursorPayload;
+import com.nexis.websocket_service.payload.ChatMessage;
+import com.nexis.websocket_service.payload.CodeOperation;
+import com.nexis.websocket_service.payload.CursorPayload;
 import com.nexis.websocket_service.service.OperationalTransformService;
 import com.nexis.websocket_service.service.pub_sub.RedisMessagePublisher;
 import com.nexis.websocket_service.service.rabbit_mq_event_recorder.RabbitMqEventPublisher;
-import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
 
@@ -66,7 +64,7 @@ public class WebsocketController {
                 chat.getUserId()
         );
 
-        redisMessagePublisher.publish("nexis:workspace"+workspaceId+":chat"
+        redisMessagePublisher.publish("nexis:workspace:"+workspaceId+":chat"
                 ,chat);
 
         rabbitMqEventPublisher.publishChatEvent(chat);
