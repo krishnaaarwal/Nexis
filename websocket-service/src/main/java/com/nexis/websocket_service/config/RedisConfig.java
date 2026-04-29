@@ -24,10 +24,10 @@ public class RedisConfig {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
 
-        // Tell it: "When 'workspace-*' channel gets a message, call our subscriber"
+        //"When 'workspace-*' channel gets a message, call our subscriber"
         container.addMessageListener(
                 redisMessageSubscriber,
-                new PatternTopic("workspace-*")
+                new PatternTopic("nexis:workspace:*")
         );
 
         return container;
