@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/CodeCollab.iml" filepath="$PROJECT_DIR$/.idea/CodeCollab.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Nexis.iml" filepath="$PROJECT_DIR$/.idea/Nexis.iml" />
     </modules>
   </component>
 </project>

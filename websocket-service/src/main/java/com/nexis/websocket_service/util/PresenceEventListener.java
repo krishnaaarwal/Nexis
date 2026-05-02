@@ -34,13 +34,15 @@ public class PresenceEventListener {
                String[] parts = destination.split("/");
                String workspaceId = parts[3];
 
-               String userIdstr = stompHeaderAccessor.getFirstNativeHeader("userId");
+               if (stompHeaderAccessor.getUser() == null) {
+                   log.warn("SECURITY ALERT: Unauthenticated session {} tried to join workspace {}", sessionId, workspaceId);
+                   return;
+               }
 
-               if (userIdstr == null) return; // Prevent crashes if header is missing during testing
-
+               String userIdstr = stompHeaderAccessor.getUser().getName();
                UUID userId = UUID.fromString(userIdstr);
 
-               log.info("User {} joined workspace {} (Session: {})", userId, workspaceId, sessionId);
+               log.info("User [{}] JOINED workspace [{}] via Session [{}]", userId, workspaceId, sessionId);
 
                redisTemplate.opsForValue().set("nexis:session:" + sessionId, workspaceId + ":" + userId, 12, TimeUnit.HOURS);
 
@@ -49,7 +51,7 @@ public class PresenceEventListener {
                PresencePayload payload = new PresencePayload(userId, PresenceType.JOINED);
                redisMessagePublisher.publish("nexis:workspace:" + workspaceId + ":presence", payload);
            }catch (Exception e) {
-               log.error("Error processing subscribe event", e);
+               log.error("Failed to process subscribe event for session [{}]: {}", sessionId, e.getMessage(), e);
            }
        }
     }
@@ -62,23 +64,30 @@ public class PresenceEventListener {
         String sessionData = (String) redisTemplate.opsForValue().get("nexis:session:" + sessionId);
 
         if (sessionData != null) {
-            String[] parts = sessionData.split(":");
-            String workspaceId = parts[0];
-            String userIdstr = parts[1];
+            try {
+                String[] parts = sessionData.split(":");
+                String workspaceId = parts[0];
+                String userIdstr = parts[1];
 
-            UUID userId = UUID.fromString(userIdstr);
+                UUID userId = UUID.fromString(userIdstr);
 
-            log.info("User {} left workspace {} (Session: {})", userId, workspaceId, sessionId);
+                log.info("User [{}] LEFT workspace [{}] via Session [{}]", userId, workspaceId, sessionId);
 
-            // 1. Remove them from the active Workspace Set
-            redisTemplate.opsForSet().remove("nexis:workspace:" + workspaceId + ":users", userId);
+                // 1. Remove them from the active Workspace Set
+                redisTemplate.opsForSet().remove("nexis:workspace:" + workspaceId + ":users", userId);
 
-            // 2. Delete the session mapping to clean up RAM
-            redisTemplate.delete("nexis:session:" + sessionId);
+                // 2. Delete the session mapping to clean up RAM
+                redisTemplate.delete("nexis:session:" + sessionId);
 
-            // 3. Broadcast the "LEFT" event to everyone else
-            PresencePayload payload = new PresencePayload(userId, PresenceType.LEFT);
-            redisMessagePublisher.publish("nexis:workspace:" + workspaceId + ":presence", payload);
+                // 3. Broadcast the "LEFT" event to everyone else
+                PresencePayload payload = new PresencePayload(userId, PresenceType.LEFT);
+                redisMessagePublisher.publish("nexis:workspace:" + workspaceId + ":presence", payload);
+            } catch (Exception e) {
+                log.error("Error cleaning up disconnected session [{}]: {}", sessionId, e.getMessage(), e);
+            }
+
+        }else{
+            log.debug("Session [{}] disconnected, but no active workspace mapping was found.", sessionId);
         }
     }
 }

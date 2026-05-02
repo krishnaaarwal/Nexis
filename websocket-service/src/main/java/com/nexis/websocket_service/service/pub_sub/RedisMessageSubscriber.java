@@ -1,11 +1,13 @@
 package com.nexis.websocket_service.service.pub_sub;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RedisMessageSubscriber implements MessageListener {
@@ -46,13 +48,13 @@ public class RedisMessageSubscriber implements MessageListener {
                 );
 
             }else {
-                return;
+                log.warn("Unrecognized Redis channel pattern received: {}", channel);
             }
 
 
 
         } catch (Exception e) {
-            System.err.println("Failed to process Redis message: " + e.getMessage());
+            log.error("CRITICAL: Failed to process incoming Redis message. Error: {}", e.getMessage(), e);
         }
     }
 }

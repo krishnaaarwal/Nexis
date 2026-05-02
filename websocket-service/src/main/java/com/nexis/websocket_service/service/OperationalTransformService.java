@@ -1,6 +1,7 @@
 package com.nexis.websocket_service.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nexis.websocket_service.exception.WorkspaceBusyException;
 import com.nexis.websocket_service.payload.CodeOperation;
 import com.nexis.websocket_service.service.lock.RedissonLockService;
 import com.nexis.websocket_service.util.OTEngine;
@@ -27,8 +28,8 @@ public class OperationalTransformService {
         String versionKey = "nexis:workspace:" + workspaceId + ":version";
 
         if (!lockService.acquireLock(workspaceId)) {
-            log.error("Could not acquire lock for workspace: {}", workspaceId);
-            throw new RuntimeException("System busy. Please retry.");
+            log.warn("Lock collision: Could not acquire lock for workspace [{}] on operation [{}]", workspaceId, incomingOp.getOperationType());
+            throw new WorkspaceBusyException("Server is processing too many concurrent edits. Please retry.");
         }
 
         try {
@@ -38,14 +39,20 @@ public class OperationalTransformService {
 
             List<Object> rawHistory = redisTemplate.opsForList().range(historyKey, 0, -1);
             if (rawHistory != null && !rawHistory.isEmpty()) {
-                List<CodeOperation> history = rawHistory.stream()
-                        .map(obj -> objectMapper.convertValue(obj, CodeOperation.class))
-                        .collect(Collectors.toList());
 
-                for (CodeOperation historicalOp : history) {
-                    if (historicalOp.getVersion() >= incomingOp.getVersion()) {
-                        incomingOp = OTEngine.transform(incomingOp, historicalOp);
+                try {
+                    List<CodeOperation> history = rawHistory.stream()
+                            .map(obj -> objectMapper.convertValue(obj, CodeOperation.class))
+                            .collect(Collectors.toList());
+
+                    for (CodeOperation historicalOp : history) {
+                        if (historicalOp.getVersion() >= incomingOp.getVersion()) {
+                            incomingOp = OTEngine.transform(incomingOp, historicalOp);
+                        }
                     }
+                } catch (IllegalArgumentException e) {
+                    log.error("CORRUPTION DETECTED: Failed to parse operation history for workspace [{}]. History might be corrupted.", workspaceId, e);
+                    throw new RuntimeException("Document history corruption detected.");
                 }
             }
 
@@ -57,9 +64,10 @@ public class OperationalTransformService {
             redisTemplate.opsForList().rightPush(historyKey, incomingOp);
             redisTemplate.opsForList().trim(historyKey, -100, -1);
 
-            log.info("Workspace {} | version {} → {} | op: {} at {}",
+            log.info("[OT-ENGINE] Workspace: {} | Ver: {}->{} | Op: {} | Pos: {} | User: {}",
                     workspaceId, serverVersion, newVersion,
-                    incomingOp.getOperationType(), incomingOp.getPosition());
+                    incomingOp.getOperationType(), incomingOp.getPosition(), incomingOp.getUserId());
+
 
             return incomingOp;
 
