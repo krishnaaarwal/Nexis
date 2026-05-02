@@ -32,16 +32,24 @@ public class RedisMessageSubscriber implements MessageListener {
                 String workspaceId = parts[2];
                 String channelType = parts[3];
                 destination = "/topic/workspace/" + workspaceId + "/"+ channelType;
+
+                messagingTemplate.convertAndSend(destination, publishedMessage);
             }
             // Pattern: nexis:user:{id}:private
             else if (parts[1].equals("user")) {
                 String userId = parts[2];
-                destination = "/user/queue/" + userId + "/private";
+
+                messagingTemplate.convertAndSendToUser(
+                        userId,              // Spring finds this user's session
+                        "/queue/private",    // client subscribed to /user/queue/private
+                        publishedMessage
+                );
+
             }else {
                 return;
             }
 
-            messagingTemplate.convertAndSend(destination, publishedMessage);
+
 
         } catch (Exception e) {
             System.err.println("Failed to process Redis message: " + e.getMessage());
