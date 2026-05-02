@@ -17,10 +17,18 @@ services:
     restart: always
     ports:
       - "6379:6379"
-    environment:
-      REDIS_PASSWORD: Redis123
     volumes:
         - "/home/krishna/Development/NexisDB/redis-data:/data"
     command: redis-server --appendonly yes --requirepass Redis123
+  rabbitmq:
+    container_name: nexis_rabbitmq
+    image: rabbitmq:3-management
+    restart: always
+    ports:
+      - "5672:5672"    # AMQP - Spring Boot connects here
+      - "15672:15672"  # Management UI — browser dashboard
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: Rabbitmq123
 
 

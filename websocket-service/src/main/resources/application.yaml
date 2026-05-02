@@ -6,9 +6,17 @@ spring:
       port: 6379
       host: localhost
       password: Redis123
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: rabbitmq
+    password: Rabbitmq123
 server:
   port: 8082
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+jwt:
+  secretkey: 783h78huhudhu9he3d87g36gf673grt4t72t387guidh98whdijsiijeuhuhnchuti3jh783g6000jdj
