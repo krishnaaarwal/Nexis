@@ -1,10 +1,9 @@
 package com.nexis.execution_service.entity;
 
-import com.nexis.execution_service.type.CodeLanguage;
-import com.nexis.execution_service.type.StatusType;
+import com.nexis.execution_service.config.type.CodeLanguage;
+import com.nexis.execution_service.config.type.StatusType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -12,6 +11,9 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ExecutionJob {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

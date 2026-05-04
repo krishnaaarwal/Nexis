@@ -1,5 +1,5 @@
 package com.nexis.execution_service.dto;;
-import com.nexis.execution_service.type.StatusType;
+import com.nexis.execution_service.config.type.StatusType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,15 +1,15 @@
 package com.nexis.execution_service.dto;
 
-import com.nexis.execution_service.type.CodeLanguage;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.nexis.execution_service.config.type.CodeLanguage;
+import lombok.*;
 
 import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class JobRequestDto {
     private UUID userId;
 
