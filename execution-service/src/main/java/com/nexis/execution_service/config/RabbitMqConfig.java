@@ -7,6 +7,8 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+
 @Configuration
 public class RabbitMqConfig {
 
@@ -21,7 +23,6 @@ public class RabbitMqConfig {
         return new Queue(QUEUE_NAME, true);
     }
 
-    // 3. The Router
     @Bean
     public DirectExchange executionExchange() {
         return new DirectExchange(EXCHANGE_NAME);

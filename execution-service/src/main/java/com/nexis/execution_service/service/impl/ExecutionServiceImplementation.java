@@ -1,5 +1,7 @@
 package com.nexis.execution_service.service.impl;
 
+import com.nexis.execution_service.config.RabbitMqConfig;
+import com.nexis.execution_service.dto.JobMessageDto;
 import com.nexis.execution_service.dto.JobRequestDto;
 import com.nexis.execution_service.dto.JobResponseDto;
 import com.nexis.execution_service.entity.ExecutionJob;
@@ -7,9 +9,11 @@ import com.nexis.execution_service.repository.ExecutionRepository;
 import com.nexis.execution_service.service.ExecutionService;
 import com.nexis.execution_service.config.type.StatusType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -20,6 +24,7 @@ import java.util.UUID;
 public class ExecutionServiceImplementation implements ExecutionService {
 
     private final ExecutionRepository executionRepository;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     @Transactional
@@ -31,13 +36,15 @@ public class ExecutionServiceImplementation implements ExecutionService {
                 .codeLanguage(requestDto.getCodeLanguage())
                 .code(requestDto.getCode())
                 .status(StatusType.QUEUED)
-                .startedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
-        Long timeTaken = job.getCompletedAt().getLong() - job.getStartedAt().getLong();
+        JobMessageDto messageDto = new JobMessageDto(job.getId(),job.getCodeLanguage());
 
         executionRepository.save(job);
-        return new JobResponseDto(job.getId(),job.getStatus(),job.getOutput(), job.getError(),timeTaken);
+        rabbitTemplate.convertAndSend(RabbitMqConfig.EXCHANGE_NAME,RabbitMqConfig.ROUTING_KEY,messageDto);
+
+        return new JobResponseDto(job.getId(),job.getStatus(),job.getOutput(), job.getError(),null);
     }
 
     @Override
@@ -55,8 +62,11 @@ public class ExecutionServiceImplementation implements ExecutionService {
     public JobResponseDto getJobStatus(UUID jobId) {
         ExecutionJob job = executionRepository.findById(jobId).orElseThrow(()->new IllegalArgumentException("Job not found!"+jobId));
 
-        Long timeTaken = job.getCompletedAt().getLong() - job.getStartedAt().getLong();
-        return new JobResponseDto(job.getId(),job.getStatus(),job.getOutput(), job.getError(),timeTaken);
+        long durationMs = 0;
+        if(job.getStartedAt() != null && job.getCompletedAt() != null){
+            durationMs = Duration.between(job.getStartedAt(), job.getCompletedAt()).toMillis();
+        }
+        return new JobResponseDto(job.getId(),job.getStatus(),job.getOutput(), job.getError(),durationMs);
     }
 
 }
