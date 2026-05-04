@@ -4,7 +4,6 @@ public enum CodeLanguage {
     JAVA,
     PYTHON,
     CPP,
-    C,
     JAVASCRIPT,
     DART,
 
