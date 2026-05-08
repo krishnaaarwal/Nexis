@@ -37,6 +37,8 @@ public class ExecutionServiceImplementation implements ExecutionService {
                 .code(requestDto.getCode())
                 .status(StatusType.QUEUED)
                 .createdAt(LocalDateTime.now())
+                .startedAt(null)
+                .completedAt(null)
                 .build();
 
         JobMessageDto messageDto = new JobMessageDto(job.getId(),job.getCodeLanguage());
