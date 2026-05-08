@@ -52,7 +52,8 @@ import java.util.concurrent.TimeUnit;
                     .exec(); // .exec() physically sends the HTTP POST request to the Unix Socket
 
             String containerId = container.getId();
-            System.out.println("Created container: " + containerId);
+
+            log.info("Created Docker container: {} for Job: {}", containerId, jobId);
 
             // Step 2 - Start the container
             dockerClient.startContainerCmd(containerId).exec();
