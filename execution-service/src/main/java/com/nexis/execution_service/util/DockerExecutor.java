@@ -3,6 +3,7 @@ package com.nexis.execution_service.util;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.StreamType;
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
         private final DockerClient dockerClient;
 
-        public ExecutionResult execute(UUID jobId, CodeLanguage codeLanguage, String code) {
+        public ExecutionResult execute(UUID jobId, UUID userId , UUID workspaceId,CodeLanguage codeLanguage, String code) {
 
             StringBuilder stdout = new StringBuilder();
             StringBuilder stderr = new StringBuilder();
@@ -36,7 +37,11 @@ import java.util.concurrent.TimeUnit;
 
             HostConfig hostConfig = HostConfig.newHostConfig()
                     .withMemory(134217728L) // 128 MB in bytes (128 * 1024 * 1024)
-                    .withNetworkMode("none"); // Completely disables internet access inside the container
+                    .withNetworkMode("none") // Completely disables internet access inside the container
+                      .withCpuPeriod(100000L) // Set CPU cycle period
+                    .withCpuQuota(50000L)   // Limit to 50,000 out of 100,000 (Exactly 50% CPU)
+                    .withReadonlyRootfs(true) // Freezes the file system. They cannot install packages or create files anywhere except /tmp
+                     .withBinds(Bind.parse("/tmp:/tmp")); // Give them a temporary scratchpad if they need to write files
 
 
         // Build and send the Create Command to the Docker Daemon (a Builder pattern)
@@ -99,7 +104,7 @@ import java.util.concurrent.TimeUnit;
             if (stderr.length() > 0) {
                 finalStatus = StatusType.FAILED;
             }
-            return new ExecutionResult(jobId,finalStatus,stdout.toString(),stderr.toString());
+            return new ExecutionResult(jobId,userId,workspaceId,finalStatus,stdout.toString(),stderr.toString());
         }
 
         private record ContainerSetup(String image, String[] command) {}

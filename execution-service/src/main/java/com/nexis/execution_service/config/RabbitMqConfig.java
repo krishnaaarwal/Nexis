@@ -16,6 +16,12 @@ public class RabbitMqConfig {
     public static final String EXCHANGE_NAME = "execution.exchange";
     public static final String ROUTING_KEY = "execution.routing.key";
 
+    public static final String RESULT_EXCHANGE = "result.exchange";
+    public static final String RESULT_ROUTING_KEY = "result.routing.key";
+
+    // Notice we do NOT create a Queue here!
+    // The Execution Service is just the Publisher now.
+    // The WebSocket Service will create the Queue when we build it later.
     @Bean
     public Queue executionQueue() {
         // The 'true' parameter means durable.
@@ -27,6 +33,9 @@ public class RabbitMqConfig {
     public DirectExchange executionExchange() {
         return new DirectExchange(EXCHANGE_NAME);
     }
+
+    @Bean
+    public DirectExchange resultExchange() { return new DirectExchange(RESULT_EXCHANGE);}
 
     @Bean
     public Binding binding(Queue executionQueue, DirectExchange executionExchange) {

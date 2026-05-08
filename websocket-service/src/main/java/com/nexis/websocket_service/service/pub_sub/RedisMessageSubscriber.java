@@ -1,7 +1,10 @@
 package com.nexis.websocket_service.service.pub_sub;
 
+import com.nexis.websocket_service.config.RabbitMqConfig;
+import com.nexis.websocket_service.payload.ExecutionResultPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -57,4 +60,5 @@ public class RedisMessageSubscriber implements MessageListener {
             log.error("CRITICAL: Failed to process incoming Redis message. Error: {}", e.getMessage(), e);
         }
     }
+
 }

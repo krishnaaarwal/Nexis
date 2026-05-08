@@ -12,6 +12,8 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ExecutionResult {
     private UUID id;
+    private UUID userId;
+    private UUID workspaceId;
     private StatusType statusType;
     private String output; // STRICTLY for STDOUT
     private String error;  // STRICTLY for STDERR

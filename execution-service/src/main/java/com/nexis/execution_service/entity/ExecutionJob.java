@@ -14,6 +14,11 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "execution_jobs", indexes = {
+        @Index(name = "idx_workspace_id", columnList = "workspaceId"),
+        @Index(name = "idx_user_id", columnList = "userId"),
+        @Index(name = "idx_status", columnList = "status")
+})
 public class ExecutionJob {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
