@@ -5,6 +5,7 @@
 <br/>
 [![Nexis CI Pipeline](https://github.com/krishnaaarwal/Nexis/actions/workflows/ci.yml/badge.svg)](https://github.com/krishnaaarwal/Nexis/actions/workflows/ci.yml)
 
+<br/>
 <p>
   <a href="https://youtu.be/hZI_yioSA3c">
     <img src="https://img.shields.io/badge/▶%20Live%20Collab%20Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Live Collab Demo"/>

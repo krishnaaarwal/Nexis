@@ -15,7 +15,12 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+                "jwt.secretkey=this-is-a-very-long-dummy-test-secret-key-for-ci-cd-pipeline-12345!"
+        }
+)
 @Testcontainers
 public class AuthIntegrationTest {
 
