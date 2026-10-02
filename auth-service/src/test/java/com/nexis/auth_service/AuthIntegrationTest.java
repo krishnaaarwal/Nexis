@@ -3,9 +3,11 @@ package com.nexis.auth_service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -35,6 +37,9 @@ public class AuthIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    @MockitoBean
+    private JavaMailSender javaMailSender;
+
     @Test
     void shouldSuccessfullySignUpNewUser() {
         Map<String, String> signupRequest = Map.of(
@@ -43,13 +48,11 @@ public class AuthIntegrationTest {
                 "fullname", "Test User"
         );
 
-        // When: We send a POST request to the auth service
         ResponseEntity<String> response = restTemplate.postForEntity(
                 "/api/auth/signup",
                 signupRequest,
                 String.class
         );
-
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
