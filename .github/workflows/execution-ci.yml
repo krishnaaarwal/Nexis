@@ -3,6 +3,9 @@ name: Nexis Execution CI Pipeline
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'execution-service/**'
+      - '.github/workflows/execution-ci.yml'
   pull_request:
     branches: [ "main" ]
 
