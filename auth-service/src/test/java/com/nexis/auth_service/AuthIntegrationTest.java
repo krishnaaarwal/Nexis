@@ -21,7 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
-                "jwt.secretkey=this-is-a-very-long-dummy-test-secret-key-for-ci-cd-pipeline-12345!"
+                "jwt.secretkey=this-is-a-very-long-dummy-test-secret-key-for-ci-cd-pipeline-12345!",
+                "spring.jpa.hibernate.ddl-auto=create-drop"
         }
 )
 @Testcontainers
