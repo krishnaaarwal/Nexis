@@ -3,6 +3,7 @@
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0f12,50:1e3a5f,100:cbf14c&height=220&section=header&text=NEXIS&fontSize=90&fontColor=cbf14c&fontAlignY=40&desc=Real-Time%20Collaborative%20IDE&descSize=22&descAlignY=62&descColor=94a3b8&animation=fadeIn" width="100%"/>
 
 <br/>
+[![Nexis CI Pipeline](https://github.com/krishnaaarwal/Nexis/actions/workflows/ci.yml/badge.svg)](https://github.com/krishnaaarwal/Nexis/actions/workflows/ci.yml)
 
 <p>
   <a href="https://youtu.be/hZI_yioSA3c">
