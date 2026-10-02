@@ -8,6 +8,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -39,6 +40,9 @@ public class AuthIntegrationTest {
 
     @MockitoBean
     private JavaMailSender javaMailSender;
+
+    @MockitoBean
+    private ClientRegistrationRepository clientRegistrationRepository;
 
     @Test
     void shouldSuccessfullySignUpNewUser() {
