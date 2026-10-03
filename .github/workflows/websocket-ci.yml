@@ -1,15 +1,15 @@
-name: Nexis Recording CI Pipeline
+name: Nexis WebSocket CI Pipeline
 
 on:
   push:
     branches: [ "main" ]
     paths:
-      - 'recording-service/**'
-      - '.github/workflows/recording-ci.yml'
+      - 'websocket-service/**'
+      - '.github/workflows/websocket-ci.yml'
 
 jobs:
   test:
-    name: Recording service Integration Tests
+    name: Websocket Integration Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -23,5 +23,5 @@ jobs:
           cache: maven
 
       - name: Run Maven Tests
-        working-directory: ./recording-service
+        working-directory: ./websocket-service
         run: ./mvnw clean test

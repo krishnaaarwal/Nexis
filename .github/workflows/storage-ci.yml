@@ -1,4 +1,4 @@
-name: Nexis Storage Service CI Pipeline
+name: Nexis Storage CI Pipeline
 
 on:
   push:
