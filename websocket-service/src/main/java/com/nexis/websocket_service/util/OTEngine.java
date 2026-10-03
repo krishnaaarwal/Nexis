@@ -26,9 +26,9 @@ public class OTEngine {
     }
 
     private static CodeOperation insert_insert(CodeOperation inc, CodeOperation hist) {
-        if (hist.getPosition() < inc.getPosition() ||
-                (hist.getPosition().equals(inc.getPosition()) && inc.getUserId().compareTo(hist.getUserId()) > 0)) {
-            // Historical text was inserted before us. Shift our insert to the right.
+        // In a client-server OT model, the historical operation ALWAYS wins a tie.
+        // If historical is at or before our position, shift incoming to the right.
+        if (hist.getPosition() <= inc.getPosition()) {
             inc.setPosition(inc.getPosition() + hist.getCode().length());
         }
         return inc;
@@ -78,6 +78,12 @@ public class OTEngine {
             int overlap = Math.min(inc.getPosition() + inc.getLength(), hist.getPosition() + hist.getLength()) - hist.getPosition();
             inc.setLength(inc.getLength() - overlap);
         }
+
+        if (inc.getLength() <= 0) {
+            inc.setOperationType(OperationType.RETAIN);
+            inc.setLength(0);
+        }
+
         return inc;
     }
 }
