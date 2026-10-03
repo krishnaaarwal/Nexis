@@ -1,4 +1,4 @@
-name: Nexis CI Pipeline
+name: Nexis Auth CI Pipeline
 
 on:
   push:

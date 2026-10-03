@@ -1,4 +1,4 @@
-name: Storage Service CI
+name: Nexis Storage Service CI Pipeline
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    name: Integration Tests
+    name: Storage Integration Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
