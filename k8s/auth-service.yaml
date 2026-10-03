@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
       - name: auth-service
-        image: nexis-auth-service:latest
-        imagePullPolicy: Never
+        image: krishnaagarwal10/nexis-auth-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8081
         env:

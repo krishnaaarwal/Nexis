@@ -29,7 +29,6 @@ spec:
     spec:
       containers:
       - name: rabbitmq
-        # Using the management tag so you get the UI dashboard
         image: rabbitmq:3-management
         ports:
         - containerPort: 5672

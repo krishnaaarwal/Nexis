@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
       - name: websocket-service
-        image: nexis-websocket-service:latest
-        imagePullPolicy: Never
+        image: krishnaagarwal10/nexis-websocket-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8082
         env:

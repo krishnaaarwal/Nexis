@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
       - name: api-gateway
-        image: nexis-api-gateway:latest
-        imagePullPolicy: Never  # CRITICAL: Use the local image!
+        image: krishnaagarwal10/nexis-api-gateway:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:

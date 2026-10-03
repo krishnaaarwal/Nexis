@@ -28,7 +28,6 @@ spec:
     spec:
       containers:
       - name: minio
-        # Using the exact image version from your Docker Compose
         image: pgsty/silo:RELEASE.2026-09-16T00-00-00Z
         args:
         - server

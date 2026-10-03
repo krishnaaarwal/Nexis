@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
       - name: recording-service
-        image: nexis-recording-service:latest
-        imagePullPolicy: Never
+        image: krishnaagarwal10/nexis-recording-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8085
         env:

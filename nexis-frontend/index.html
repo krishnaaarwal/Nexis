@@ -2,12 +2,6 @@
 <html lang="en">
   <head>
     <script>
-      // sockjs-client (used by the collaboration WebSocket layer) references
-      // the bare Node.js `global` identifier at module-load time. Browsers
-      // don't have it. This runs as the first thing in the document — a
-      // plain synchronous (non-module) script — so it's guaranteed to exist
-      // before the module graph below ever starts loading, regardless of
-      // where a build tool later moves those module script tags.
       window.global = window.global || window;
     </script>
     <meta charset="UTF-8" />

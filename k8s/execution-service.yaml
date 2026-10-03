@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
       - name: execution-service
-        image: nexis-execution-service:latest
-        imagePullPolicy: Never
+        image: krishnaagarwal10/nexis-execution-service:latest
+        imagePullPolicy: Always
         
         # ADD THESE TWO LINES
         securityContext:

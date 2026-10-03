@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
       - name: storage-service
-        image: nexis-storage-service:latest
-        imagePullPolicy: Never
+        image: krishnaagarwal10/nexis-storage-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8084
         env:
