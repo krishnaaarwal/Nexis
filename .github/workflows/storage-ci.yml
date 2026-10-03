@@ -1,0 +1,27 @@
+name: Storage Service CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'storage-service/**'
+      - '.github/workflows/storage-ci.yml'
+
+jobs:
+  test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run Maven Tests
+        working-directory: ./storage-service
+        run: ./mvnw clean test
