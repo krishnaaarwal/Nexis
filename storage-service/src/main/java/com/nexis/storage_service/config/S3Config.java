@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class MinioConfig {
+public class S3Config {
 
     @Value("${nexis.storage.s3.endpoint}")
     private String endpoint;
@@ -18,7 +18,7 @@ public class MinioConfig {
     private String secretKey;
 
     @Bean
-    public MinioClient minioClient() {
+    public MinioClient s3Client() {
         return MinioClient.builder()
                 .endpoint(endpoint)
                 .credentials(accessKey, secretKey)

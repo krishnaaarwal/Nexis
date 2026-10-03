@@ -87,7 +87,7 @@ services:
     environment:
       # DO NOT change these to SILO_. The fork explicitly requires the MINIO_ prefix.
       MINIO_ROOT_USER: silo
-      MINIO_ROOT_PASSWORD: Silo123
+      MINIO_ROOT_PASSWORD: SiloSecret123
     command: server /data --console-address ":9001"
 
 
