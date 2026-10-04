@@ -140,7 +140,7 @@ public class GatewayConfig {
 
         corsConfig.setAllowedOriginPatterns(List.of(
                 "http://localhost:*",
-                "http://nexis.local"
+                "http://nexis.192.168.49.2.nip.io"
         ));
 
         corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

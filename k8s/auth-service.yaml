@@ -57,6 +57,15 @@ spec:
               name: nexis-secrets
               key: jwt.secret
 
+          # --- MAIL SECRETS INJECTION (FORCED VIA K8S) ---
+        - name: SPRING_MAIL_HOST
+          value: "smtp.gmail.com"
+        - name: SPRING_MAIL_PORT
+          value: "587"
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
+          value: "true"
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
+          value: "true"
         - name: SPRING_MAIL_USERNAME
           valueFrom:
             secretKeyRef:
@@ -68,6 +77,27 @@ spec:
               name: nexis-secrets
               key: mail.password
 
+          # --- OAUTH SECRETS INJECTION ---
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: nexis-secrets
+              key: oauth.google.client.id
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: nexis-secrets
+              key: oauth.google.client.secret
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GITHUB_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: nexis-secrets
+              key: oauth.github.client.id
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GITHUB_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: nexis-secrets
+              key: oauth.github.client.secret
 ---
 apiVersion: v1
 kind: Service
