@@ -3,8 +3,25 @@
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0f12,50:1e3a5f,100:cbf14c&height=220&section=header&text=NEXIS&fontSize=90&fontColor=cbf14c&fontAlignY=40&desc=Real-Time%20Collaborative%20IDE&descSize=22&descAlignY=62&descColor=94a3b8&animation=fadeIn" width="100%"/>
 
 <br/>
-<a href="https://github.com/krishnaaarwal/Nexis/actions/workflows/ci.yml">
-  <img src="https://github.com/krishnaaarwal/Nexis/actions/workflows/ci.yml/badge.svg" alt="Nexis CI Pipeline">
+
+<a href="https://github.com/krishnaaarwal/Nexis/actions/workflows/api-gateway-ci.yml">
+  <img src="https://github.com/krishnaaarwal/Nexis/actions/workflows/api-gateway-ci.yml/badge.svg" alt="API Gateway CI/CD"/>
+</a>
+<a href="https://github.com/krishnaaarwal/Nexis/actions/workflows/auth-ci.yml">
+  <img src="https://github.com/krishnaaarwal/Nexis/actions/workflows/auth-ci.yml/badge.svg" alt="Auth Service CI/CD"/>
+</a>
+<a href="https://github.com/krishnaaarwal/Nexis/actions/workflows/execution-ci.yml">
+  <img src="https://github.com/krishnaaarwal/Nexis/actions/workflows/execution-ci.yml/badge.svg" alt="Execution Service CI/CD"/>
+</a>
+
+<a href="https://github.com/krishnaaarwal/Nexis/actions/workflows/recording-ci.yml">
+  <img src="https://github.com/krishnaaarwal/Nexis/actions/workflows/recording-ci.yml/badge.svg" alt="Recording Service CI/CD"/>
+</a>
+<a href="https://github.com/krishnaaarwal/Nexis/actions/workflows/storage-ci.yml">
+  <img src="https://github.com/krishnaaarwal/Nexis/actions/workflows/storage-ci.yml/badge.svg" alt="Storage Service CI/CD"/>
+</a>
+<a href="https://github.com/krishnaaarwal/Nexis/actions/workflows/websocket-ci.yml">
+  <img src="https://github.com/krishnaaarwal/Nexis/actions/workflows/websocket-ci.yml/badge.svg" alt="WebSocket Service CI/CD"/>
 </a>
 
 <br/>
@@ -29,7 +46,7 @@
   <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white"/>
   <img src="https://img.shields.io/badge/Kubernetes-326CE5?style=flat-square&logo=kubernetes&logoColor=white"/>
   <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white"/>
-  <img src="https://img.shields.io/badge/MinIO-C72E49?style=flat-square&logo=minio&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Silo_S3-C72E49?style=flat-square&logo=minio&logoColor=white"/>
 </p>
 
 <br/>
@@ -54,6 +71,7 @@
 - [Service Breakdown](#-service-breakdown)
 - [How Real-Time Editing Works](#-how-real-time-editing-works)
 - [Code Execution](#-code-execution--zero-polling-architecture)
+- [Performance](#-performance)
 - [Repository Structure](#-repository-structure)
 - [Getting Started](#-getting-started)
 - [API Reference](#-api-reference)
@@ -97,7 +115,7 @@
 | ⚡ **Sandboxed Code Execution** | Isolated Docker container per job — CPU, memory, network, and timeout constrained |
 | 💬 **In-IDE Chat** | Real-time messaging via RabbitMQ consistent-hash sharding for ordered delivery |
 | 🎬 **Session Recording & Playback** | Every keystroke stored as events; replayed as a streaming NDJSON response |
-| 📁 **File Management & Versioning** | 3-step MinIO presigned upload with version tracking per file |
+| 📁 **File Management & Versioning** | 3-step S3-compatible presigned upload via Silo S3 with version tracking per file |
 | 🔐 **Auth (JWT + OAuth2 + RBAC)** | Spring Security with refresh token rotation and workspace-level roles |
 | ☸️ **Kubernetes Deployment** | Full K8s manifests — CoreDNS service discovery, persistent volumes, Nginx ingress |
 
@@ -131,7 +149,7 @@
                                     │               │         │
                                     ▼               ▼         │
                                ┌────────┐     ┌──────────┐    │
-                               │ MinIO  │     │  Docker  │    │
+                               │  Silo  │     │  Docker  │    │
                                │  S3    │     │  Sandbox │    │
                                └────────┘     └──────────┘    │
                                                                │
@@ -147,7 +165,7 @@
 
   ━━━━━━━━━━━━━━━━━━━━━━━━━ SHARED INFRASTRUCTURE ━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  PostgreSQL × 4       Redis 7            RabbitMQ 3           MinIO
+  PostgreSQL × 4       Redis 7            RabbitMQ 3           Silo S3
   ─────────────        ──────────         ──────────────        ─────────────
   auth-db   :5433      Sessions           nexis.code.*          S3-compatible
   exec-db   :5434      OT history         (shard 0/1/2)         Presigned URLs
@@ -168,7 +186,7 @@
 | **auth-service** | 8081 | Signup/Login/OAuth2, JWT issuance & rotation, workspace CRUD, member management, RBAC |
 | **websocket-service** | 8082 | OT engine with Redisson locking, Redis pub/sub for cross-instance broadcast, RabbitMQ code/chat publishing |
 | **execution-service** | 8083 | RabbitMQ consumer, Docker SDK container lifecycle, multi-language execution, result routing |
-| **storage-service** | 8084 | MinIO presigned upload (3-step), file versioning, workspace file listing, Feign-based auth checks |
+| **storage-service** | 8084 | Silo S3 presigned upload (3-step), file versioning, workspace file listing, Feign-based auth checks |
 | **recording-service** | 8085 | RabbitMQ consumer for code + chat events, PostgreSQL event store, NDJSON streaming playback |
 
 ---
@@ -257,6 +275,24 @@ The Redisson lock (500ms wait, 5s lease) guarantees operations are serialized pe
 
 ---
 
+## 📊 Performance
+
+Load-tested the WebSocket/OT layer under concurrent multi-workspace traffic using [k6](https://k6.io). 50 virtual users were distributed across 5 isolated workspaces (10 VUs per workspace), each operating against its own independent Redisson lock — validating true concurrent multi-workspace isolation, not just connection handling.
+
+| Metric | Result | Threshold |
+|--------|--------|-----------|
+| Concurrent WebSocket connections | 50 | — |
+| Concurrent isolated workspaces | 5 | — |
+| p(95) OT round-trip latency | **52 ms** | < 100 ms ✓ |
+| Sustained OT throughput | **36.4 ops/sec** | — |
+| Connection success rate | **100%** (50/50) | — |
+| Cross-workspace lock contention | **None** | — |
+| Total OT operations processed | 4,730 | — |
+
+Per-workspace OT throughput remained consistent across all 5 workspaces with no degradation under concurrent load, confirming the per-workspace Redisson lock isolation design works as intended.
+
+---
+
 ## 📦 Repository Structure
 
 ```
@@ -273,7 +309,7 @@ nexis/
 ├── execution-service/        Spring Boot + Docker SDK
 │   └── src/                  Job queue consumer, container lifecycle, result routing
 │
-├── storage-service/          Spring Boot + MinIO
+├── storage-service/          Spring Boot + Silo S3
 │   └── src/                  Presigned upload (3-step), versioning, Feign auth client
 │
 ├── recording-service/        Spring Boot
@@ -293,12 +329,12 @@ nexis/
 │   ├── execution-service.yaml
 │   ├── frontend.yaml
 │   ├── ingress.yaml
-│   ├── minio.yaml
 │   ├── nexis-config-secrets.yaml    ← secrets
 │   ├── postgres.yaml
 │   ├── rabbitmq.yaml
 │   ├── recording-service.yaml
 │   ├── redis.yaml
+│   ├── silo.yaml
 │   ├── storage-service.yaml
 │   └── websocket-service.yaml
 │
@@ -366,7 +402,7 @@ minikube tunnel                   # exposes LoadBalancer IPs
 | PostgreSQL (recording) | 5436 | |
 | Redis | 6379 | Password required |
 | RabbitMQ | 5672 | Management UI: 15672 |
-| MinIO | 9000 | Console: 9001 |
+| Silo S3 | 9000 | Console: 9001 |
 
 ---
 
@@ -407,8 +443,8 @@ PUT    /api/workspaces/{id}/transfer-ownership   Transfer to new owner
 ```http
 # 3-step presigned upload:
 POST   /api/files/upload               { workspaceId, fileName, size }
-                                       → { fileId, url }  ← presigned MinIO URL
-# (client PUTs file bytes directly to MinIO URL — backend never touches the bytes)
+                                       → { fileId, url }  ← presigned Silo S3 URL
+# (client PUTs file bytes directly to Silo S3 URL — backend never touches the bytes)
 POST   /api/files/upload-complete      { workspaceId, fileId, versionNum, fileName, sizeBytes }
 
 GET    /api/files/{id}/download        → { url }  ← presigned download URL
@@ -480,8 +516,8 @@ curl http://auth-service:8081/api/auth/internal/...
 |----------|-------|-------|
 | Deployments | 7 | 6 services + frontend (2 replicas each) |
 | Services | 7 | ClusterIP for internal, LoadBalancer for gateway + frontend |
-| ConfigMaps | 1 | DB URLs, Redis host, RabbitMQ host, MinIO endpoint |
-| Secrets | 1 | JWT secret, DB passwords, MinIO credentials |
+| ConfigMaps | 1 | DB URLs, Redis host, RabbitMQ host, Silo S3 endpoint |
+| Secrets | 1 | JWT secret, DB passwords, Silo S3 credentials |
 | PersistentVolumeClaims | 4 | One per PostgreSQL instance |
 | Ingress | 1 | Nginx — routes by path prefix |
 
@@ -518,9 +554,9 @@ Before transforming any incoming operation, the OT engine acquires a per-workspa
 
 Session replay uses Spring MVC's `StreamingResponseBody` to stream session events directly from a PostgreSQL cursor (fetch size = 100). The entire session event history never loads into memory — it flows row by row to the client as Newline-Delimited JSON.
 
-**5. 3-Step MinIO Presigned Upload**
+**5. 3-Step S3-Compatible Presigned Upload**
 
-The backend never touches actual file bytes. Step 1 generates a presigned PUT URL. Step 2 is client → MinIO directly. Step 3 notifies the backend to persist metadata. This removes the backend as a bottleneck for large file uploads entirely.
+The backend never touches actual file bytes. Step 1 generates a presigned PUT URL against Silo S3 (an S3-compatible object store). Step 2 is client → Silo S3 directly. Step 3 notifies the backend to persist metadata. This removes the backend as a bottleneck for large file uploads entirely. Silo S3 (`pgsty/silo`) is used as a self-hosted, Docker-friendly S3-compatible store.
 
 **6. Native Kubernetes Service Discovery**
 
